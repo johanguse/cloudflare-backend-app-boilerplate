@@ -103,4 +103,70 @@ describe("auth", () => {
 		});
 		expect(res.status).toBe(401);
 	});
+
+	it("change-password succeeds and old password no longer works", async () => {
+		const email = `changepw-${crypto.randomUUID()}@example.com`;
+		const password = "oldpassword1";
+		const newPassword = "newpassword2";
+
+		const reg = await fetchWorker("/api/v1/auth/register", {
+			method: "POST",
+			headers: jsonHeaders(),
+			body: JSON.stringify({ email, password, name: "CP Tester" }),
+		});
+		const regBody = (await reg.json()) as { data: { accessToken: string } };
+		const token = regBody.data.accessToken;
+
+		const change = await fetchWorker("/api/v1/auth/change-password", {
+			method: "POST",
+			headers: { ...jsonHeaders(), Authorization: `Bearer ${token}` },
+			body: JSON.stringify({ currentPassword: password, newPassword }),
+		});
+		expect(change.status).toBe(200);
+		const changeBody = (await change.json()) as { data: { ok: boolean } };
+		expect(changeBody.data.ok).toBe(true);
+
+		const loginOld = await fetchWorker("/api/v1/auth/login", {
+			method: "POST",
+			headers: jsonHeaders(),
+			body: JSON.stringify({ email, password }),
+		});
+		expect(loginOld.status).not.toBe(200);
+
+		const loginNew = await fetchWorker("/api/v1/auth/login", {
+			method: "POST",
+			headers: jsonHeaders(),
+			body: JSON.stringify({ email, password: newPassword }),
+		});
+		expect(loginNew.status).toBe(200);
+	});
+
+	it("change-password returns 401 when wrong current password", async () => {
+		const email = `changepw-wrong-${crypto.randomUUID()}@example.com`;
+		const password = "correctpassword1";
+
+		const reg = await fetchWorker("/api/v1/auth/register", {
+			method: "POST",
+			headers: jsonHeaders(),
+			body: JSON.stringify({ email, password, name: "WrongPW Tester" }),
+		});
+		const regBody = (await reg.json()) as { data: { accessToken: string } };
+		const token = regBody.data.accessToken;
+
+		const change = await fetchWorker("/api/v1/auth/change-password", {
+			method: "POST",
+			headers: { ...jsonHeaders(), Authorization: `Bearer ${token}` },
+			body: JSON.stringify({ currentPassword: "wrongpassword", newPassword: "doesntmatter1" }),
+		});
+		expect(change.status).not.toBe(200);
+	});
+
+	it("change-password returns 401 with no auth header", async () => {
+		const res = await fetchWorker("/api/v1/auth/change-password", {
+			method: "POST",
+			headers: jsonHeaders(),
+			body: JSON.stringify({ currentPassword: "x", newPassword: "newpassword1" }),
+		});
+		expect(res.status).toBe(401);
+	});
 });

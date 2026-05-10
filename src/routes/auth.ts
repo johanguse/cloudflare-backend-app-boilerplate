@@ -9,7 +9,9 @@ import {
 } from "@/lib/auth-session-from-request";
 import { issueAccessToken } from "@/lib/auth-tokens";
 import { createDb } from "@/lib/db";
+import { MSG } from "@/lib/messages";
 import type { HonoEnv } from "@/lib/types";
+import { requireBearerAuth } from "@/middlewares/auth";
 
 const registerBody = z.object({
 	email: z.string().email(),
@@ -54,6 +56,11 @@ const googleNativeBody = z.object({
 	idToken: z.string().min(1),
 	nonce: z.string().optional(),
 	accessToken: z.string().optional(),
+});
+
+const changePasswordBody = z.object({
+	currentPassword: z.string().min(1),
+	newPassword: z.string().min(8, MSG.auth.passwordTooShort),
 });
 
 async function readJson<T>(
@@ -306,6 +313,28 @@ authRoutes.post("/google", async (c) => {
 			refreshToken: tokens.refreshToken,
 		},
 	});
+});
+
+authRoutes.post("/change-password", requireBearerAuth, async (c) => {
+	const body = await readJson(c, changePasswordBody);
+	const session = c.get("session");
+	if (!session?.token) {
+		return c.json(
+			{ error: { code: "UNAUTHORIZED", message: MSG.auth.unauthorized } },
+			401,
+		);
+	}
+	const db = createDb(c.env.DB);
+	const auth = createAuth(c.env, db);
+	await auth.api.changePassword({
+		body: {
+			currentPassword: body.currentPassword,
+			newPassword: body.newPassword,
+			revokeOtherSessions: false,
+		},
+		headers: headersWithSessionBearer(c.req.raw.headers, session.token),
+	});
+	return c.json({ data: { ok: true as const, message: MSG.auth.passwordChanged } });
 });
 
 authRoutes.post("/apple", async (c) => {
