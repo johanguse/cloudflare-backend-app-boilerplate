@@ -1,0 +1,90 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "cf-backend-app",
+	"main": "src/index.ts",
+	"compatibility_date": "2025-11-01",
+	"compatibility_flags": ["nodejs_compat"],
+	"observability": { "enabled": true },
+	"triggers": {
+		"crons": ["0 6 * * *"]
+	},
+	"vars": {
+		"ENVIRONMENT": "local",
+		"APP_NAME": "CF Backend App",
+		"BETTER_AUTH_URL": "http://localhost:8787",
+		"TRUSTED_ORIGINS": "http://localhost:8081,http://127.0.0.1:8081",
+		"RESEND_FROM_EMAIL": "onboarding@resend.dev"
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "cf-backend-app-db",
+			"database_id": "00000000-0000-0000-0000-000000000001",
+			"migrations_dir": "src/db/migrations"
+		}
+	],
+	"kv_namespaces": [
+		{
+			"binding": "SESSION_KV",
+			"id": "00000000000000000000000000000001"
+		},
+		{
+			"binding": "CACHE_KV",
+			"id": "00000000000000000000000000000002"
+		}
+	],
+	"r2_buckets": [
+		{
+			"binding": "STORAGE",
+			"bucket_name": "cf-backend-app-storage"
+		}
+	],
+	"env": {
+		"staging": {
+			"name": "cf-backend-app-staging",
+			"vars": {
+				"ENVIRONMENT": "staging",
+				"APP_NAME": "CF Backend App (Staging)",
+				"BETTER_AUTH_URL": "https://api-staging.example.com",
+				"TRUSTED_ORIGINS": "https://api-staging.example.com",
+				"RESEND_FROM_EMAIL": "onboarding@resend.dev"
+			},
+			"d1_databases": [
+				{
+					"binding": "DB",
+					"database_name": "cf-backend-app-db-staging",
+					"database_id": "00000000-0000-0000-0000-000000000002",
+					"migrations_dir": "src/db/migrations"
+				}
+			],
+			"kv_namespaces": [
+				{ "binding": "SESSION_KV", "id": "REPLACE_STAGING_SESSION_KV_ID" },
+				{ "binding": "CACHE_KV", "id": "REPLACE_STAGING_CACHE_KV_ID" }
+			],
+			"r2_buckets": [{ "binding": "STORAGE", "bucket_name": "cf-backend-app-storage-staging" }]
+		},
+		"production": {
+			"name": "cf-backend-app-production",
+			"vars": {
+				"ENVIRONMENT": "production",
+				"APP_NAME": "CF Backend App",
+				"BETTER_AUTH_URL": "https://api.example.com",
+				"TRUSTED_ORIGINS": "https://api.example.com",
+				"RESEND_FROM_EMAIL": "onboarding@resend.dev"
+			},
+			"d1_databases": [
+				{
+					"binding": "DB",
+					"database_name": "cf-backend-app-db-prod",
+					"database_id": "00000000-0000-0000-0000-000000000003",
+					"migrations_dir": "src/db/migrations"
+				}
+			],
+			"kv_namespaces": [
+				{ "binding": "SESSION_KV", "id": "REPLACE_PROD_SESSION_KV_ID" },
+				{ "binding": "CACHE_KV", "id": "REPLACE_PROD_CACHE_KV_ID" }
+			],
+			"r2_buckets": [{ "binding": "STORAGE", "bucket_name": "cf-backend-app-storage-prod" }]
+		}
+	}
+}
