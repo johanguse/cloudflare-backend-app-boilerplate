@@ -51,3 +51,38 @@ Before deploying to staging/production, update `wrangler.jsonc`:
 Local SQLite for Drizzle Kit / Studio lives at `.data/local.sqlite` by default (`SQLITE_PATH` overrides). Worker dev uses D1’s local simulation via Wrangler, not that file.
 
 **Remote D1** (introspection / Studio against staging): set vars from `.env.staging.example`, then run `DRIZZLE_D1_REMOTE=true bunx drizzle-kit studio` (see comments in `drizzle.config.ts`).
+
+### Local seed data
+
+After running `bun run db:seed:local` the following records are available:
+
+#### Test users — all passwords: `password123`
+
+| Email | Email verified | Notes |
+|-------|---------------|-------|
+| `seed@example.com` | Yes | Primary dev account, ready to sign in |
+| `unverified@example.com` | No | Use to test the email verification flow |
+
+#### API key (server-to-server)
+
+| Field | Value |
+|-------|-------|
+| Secret | `dev_sk_test_key_change_me` |
+| Prefix | `dev_sk_te` |
+| Owner | `seed@example.com` |
+| Expires | Never (local only) |
+
+> The seed is idempotent (`INSERT OR IGNORE`) — safe to run multiple times.
+
+#### Reset local database
+
+```bash
+# 1. Delete Wrangler’s local D1 state
+rm -rf .wrangler/state/v3/d1
+
+# 2. Re-apply migrations
+bun run db:migrate
+
+# 3. Re-seed
+bun run db:seed:local
+```
