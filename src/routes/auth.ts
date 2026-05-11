@@ -12,6 +12,16 @@ import { createDb } from "@/lib/db";
 import { MSG } from "@/lib/messages";
 import type { HonoEnv } from "@/lib/types";
 import { requireBearerAuth } from "@/middlewares/auth";
+import { resolveAppError } from "@/middlewares/error";
+
+function settleBetterAuthPromise<T>(
+	promise: Promise<T>,
+): Promise<{ ok: true; value: T } | { ok: false; error: unknown }> {
+	return promise.then(
+		(value) => ({ ok: true as const, value }),
+		(error: unknown) => ({ ok: false as const, error }),
+	);
+}
 
 const registerBody = z.object({
 	email: z.string().email(),
@@ -117,14 +127,19 @@ authRoutes.post("/login", async (c) => {
 	const body = await readJson(c, loginBody);
 	const db = createDb(c.env.DB);
 	const auth = createAuth(c.env, db);
-	const signIn = await auth.api.signInEmail({
-		body: { email: body.email, password: body.password },
-		headers: c.req.raw.headers,
-	});
-	const tokens = await issueAccessToken(auth, signIn.token);
+	const signInResult = await settleBetterAuthPromise(
+		auth.api.signInEmail({
+			body: { email: body.email, password: body.password },
+			headers: c.req.raw.headers,
+		}),
+	);
+	if (!signInResult.ok) {
+		return resolveAppError(signInResult.error, c);
+	}
+	const tokens = await issueAccessToken(auth, signInResult.value.token);
 	return c.json({
 		data: {
-			user: signIn.user,
+			user: signInResult.value.user,
 			accessToken: tokens.accessToken,
 			refreshToken: tokens.refreshToken,
 		},
@@ -326,14 +341,19 @@ authRoutes.post("/change-password", requireBearerAuth, async (c) => {
 	}
 	const db = createDb(c.env.DB);
 	const auth = createAuth(c.env, db);
-	await auth.api.changePassword({
-		body: {
-			currentPassword: body.currentPassword,
-			newPassword: body.newPassword,
-			revokeOtherSessions: false,
-		},
-		headers: headersWithSessionBearer(c.req.raw.headers, session.token),
-	});
+	const result = await settleBetterAuthPromise(
+		auth.api.changePassword({
+			body: {
+				currentPassword: body.currentPassword,
+				newPassword: body.newPassword,
+				revokeOtherSessions: false,
+			},
+			headers: headersWithSessionBearer(c.req.raw.headers, session.token),
+		}),
+	);
+	if (!result.ok) {
+		return resolveAppError(result.error, c);
+	}
 	return c.json({ data: { ok: true as const, message: MSG.auth.passwordChanged } });
 });
 

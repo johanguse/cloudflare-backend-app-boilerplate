@@ -1,0 +1,22 @@
+diff --git a/dist/endpoint.mjs b/dist/endpoint.mjs
+index 37932fc34fb857113ea4b59dd8d283ff7401656f..865006d9bfc1c81c69eb8c5efd1e56a482e8f5d3 100644
+--- a/dist/endpoint.mjs
++++ b/dist/endpoint.mjs
+@@ -27,10 +27,15 @@ function createEndpoint(pathOrOptions, handlerOrOptions, handlerOrNever) {
+ 				code: "VALIDATION_ERROR"
+ 			});
+ 		}
+-		const response = await handler(internalContext).catch(async (e) => {
++		const response = await handler(internalContext).catch((e) => {
+ 			if (isAPIError(e)) {
+ 				const onAPIError = options.onAPIError;
+-				if (onAPIError) await onAPIError(e);
++				if (onAPIError) {
++					return Promise.resolve(onAPIError(e)).then(() => {
++						if (context.asResponse) return e;
++						throw e;
++					});
++				}
+ 				if (context.asResponse) return e;
+ 			}
+ 			throw e;

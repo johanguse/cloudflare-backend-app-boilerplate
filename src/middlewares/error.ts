@@ -1,5 +1,5 @@
 import { APIError } from "better-auth";
-import type { ErrorHandler } from "hono";
+import type { Context, ErrorHandler } from "hono";
 import { HTTPException } from "hono/http-exception";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 import { ZodError } from "zod";
@@ -7,17 +7,18 @@ import { ZodError } from "zod";
 import { MSG } from "@/lib/messages";
 import type { HonoEnv } from "@/lib/types";
 
-export const globalErrorHandler: ErrorHandler<HonoEnv> = (err, c) => {
+/**
+ * Converts a caught unknown value into a typed JSON error response.
+ * Use this inside route handlers when you catch an error manually
+ * (e.g. via settleBetterAuthPromise) and need to return a response
+ * without re-throwing into Hono's global error handler.
+ */
+export function resolveAppError(err: unknown, c: Context<HonoEnv>): Response {
 	if (err instanceof HTTPException) {
 		return err.res
 			? err.getResponse()
 			: c.json(
-					{
-						error: {
-							code: "HTTP_ERROR",
-							message: err.message || MSG.generic.badRequest,
-						},
-					},
+					{ error: { code: "HTTP_ERROR", message: err.message || MSG.generic.badRequest } },
 					err.status as ContentfulStatusCode,
 				);
 	}
@@ -28,8 +29,6 @@ export const globalErrorHandler: ErrorHandler<HonoEnv> = (err, c) => {
 		) as ContentfulStatusCode;
 		const body = err.body;
 		const code = typeof body?.code === "string" ? body.code : "AUTH_ERROR";
-
-		// Map better-auth internal codes to human-readable EN messages.
 		const message = mapBetterAuthCode(code, body?.message ?? err.message);
 		return c.json({ error: { code, message } }, status);
 	}
@@ -49,15 +48,13 @@ export const globalErrorHandler: ErrorHandler<HonoEnv> = (err, c) => {
 
 	console.error(err);
 	return c.json(
-		{
-			error: {
-				code: "INTERNAL_SERVER_ERROR",
-				message: MSG.generic.internalError,
-			},
-		},
+		{ error: { code: "INTERNAL_SERVER_ERROR", message: MSG.generic.internalError } },
 		500,
 	);
-};
+}
+
+export const globalErrorHandler: ErrorHandler<HonoEnv> = (err, c) =>
+	resolveAppError(err, c);
 
 function mapBetterAuthCode(code: string, fallback?: string): string {
 	switch (code) {
