@@ -1,6 +1,6 @@
 # Copy to `.dev.vars` for `bun run dev` (never commit `.dev.vars`).
 # If `BETTER_AUTH_SECRET` is unset and `ENVIRONMENT` is local/development, a dev-only default is used (`src/lib/config.ts`).
-# BETTER_AUTH_SECRET=
+BETTER_AUTH_SECRET=
 # RESEND_API_KEY=
 # GOOGLE_CLIENT_ID=
 # GOOGLE_CLIENT_SECRET=
@@ -11,9 +11,13 @@
 # OPENROUTER_KEY=
 #
 # The following are only needed for running `drizzle-kit` against a remote D1 database.
-# CLOUDFLARE_ACCOUNT_ID=
-# CLOUDFLARE_API_TOKEN=
-# CLOUDFLARE_D1_DATABASE_ID=
 # DRIZZLE_D1_REMOTE=true
 #
 # `RESEND_FROM_EMAIL` is set in `wrangler.jsonc` → `vars`; change there or per-environment blocks.
+
+# Cloudflare R2
+CLOUDFLARE_R2_ACCOUNT_ID='6a04bef79e697bf63fdc0587f95abb25'
+CLOUDFLARE_R2_ACCESS_KEY_ID=''
+CLOUDFLARE_R2_SECRET_ACCESS_KEY=''
+CLOUDFLARE_R2_BUCKET_NAME='staging'
+CLOUDFLARE_R2_ENDPOINT_URL='https://6a04bef79e697bf63fdc0587f95abb25.r2.cloudflarestorage.com'
