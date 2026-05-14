@@ -220,6 +220,22 @@ authRoutes.post("/verify-email", async (c) => {
 	});
 });
 
+authRoutes.post("/resend-verification", async (c) => {
+	const body = await readJson(c, forgotPasswordBody);
+	const db = createDb(c.env.DB);
+	const auth = createAuth(c.env, db);
+	await auth.api.sendVerificationEmail({
+		body: { email: body.email },
+		headers: c.req.raw.headers,
+	});
+	return c.json({
+		data: {
+			success: true as const,
+			message: "Verification email sent when the account exists",
+		},
+	});
+});
+
 authRoutes.post("/forgot-password", async (c) => {
 	const body = await readJson(c, forgotPasswordBody);
 	const db = createDb(c.env.DB);

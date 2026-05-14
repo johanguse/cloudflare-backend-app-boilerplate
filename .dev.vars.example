@@ -8,5 +8,12 @@
 # APPLE_CLIENT_SECRET=
 # Optional: public base URL for R2 (custom domain / CDN). When set, upload responses and GET /uploads/:key/url use direct public URLs.
 # R2_PUBLIC_BASE_URL=
+# OPENROUTER_KEY=
+#
+# The following are only needed for running `drizzle-kit` against a remote D1 database.
+# CLOUDFLARE_ACCOUNT_ID=
+# CLOUDFLARE_API_TOKEN=
+# CLOUDFLARE_D1_DATABASE_ID=
+# DRIZZLE_D1_REMOTE=true
 #
 # `RESEND_FROM_EMAIL` is set in `wrangler.jsonc` → `vars`; change there or per-environment blocks.

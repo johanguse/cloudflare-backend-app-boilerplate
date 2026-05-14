@@ -29,6 +29,13 @@
       "when": 1778435295783,
       "tag": "0003_user_soft_delete_and_push",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1778716559785,
+      "tag": "0004_careful_roughhouse",
+      "breakpoints": true
     }
   ]
 }

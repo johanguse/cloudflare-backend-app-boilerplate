@@ -11,6 +11,7 @@ import { authRoutes } from "@/routes/auth";
 import { healthRoutes } from "@/routes/health";
 import { uploadRoutes } from "@/routes/uploads";
 import { userRoutes } from "@/routes/users";
+import { analysisRoutes } from "@/routes/analyses";
 
 const app = new Hono<HonoEnv>();
 
@@ -25,6 +26,8 @@ app.route("/api/v1/auth", authRoutes);
 app.route("/api/v1/users", userRoutes);
 
 app.route("/api/v1/uploads", uploadRoutes);
+
+app.route("/api/v1/analyses", analysisRoutes);
 
 app.route("/api/v1/api-keys", apiKeyRoutes);
 

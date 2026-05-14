@@ -20,6 +20,25 @@ bun run dev
 - **Health:** `GET http://127.0.0.1:8787/health` and `GET http://127.0.0.1:8787/api/v1/health`
 - **Better Auth** (mobile-friendly): `GET|POST /api/auth/*` — see [Better Auth docs](https://www.better-auth.com/docs). Uses Bearer + JWT (`bearer` + `jwt` plugins). Apply migrations **including** `src/db/migrations/0001_*.sql` for the `jwks` table before first auth use.
 
+After migrate + seed, sign in via `POST /api/v1/auth/login` with JSON `{ "email", "password" }` (see seeded users below).
+
+## Seeded local users (`db:seed` / `db:seed:local`)
+
+**Local D1 only.** Passwords are for development; never deploy or reuse these in production.
+
+| Email | Password | User id |
+|-------|----------|---------|
+| `admin@drape.local` | `password123` | `seed-user-001` |
+| `dev@drape.local` | `DevSeed#2026` | `seed-user-002` |
+
+**Seeded API key** (owner: `admin@drape.local`):
+
+- **Header:** `X-API-Key: <full secret>`
+- **Full secret:** `dev_sk_test_key_change_me`
+- **Prefix (stored in DB):** `dev_sk_te` — the app compares a SHA-256 hash of the full secret; use the full value in the header.
+
+If `db:seed` fails with a unique constraint, remove existing seed rows (see comments at the top of `scripts/seed-local.sql`) or reset local D1, then run the seed again.
+
 ## Replace Cloudflare placeholders
 
 Before deploying to staging/production, update `wrangler.jsonc`:
@@ -39,6 +58,7 @@ Before deploying to staging/production, update `wrangler.jsonc`:
 | `bun run cf:typegen` | Regenerate `worker-configuration.d.ts` |
 | `bun run db:generate` | New migration from schema (check FK order in generated SQL) |
 | `bun run db:migrate` | Apply migrations to local D1 (Wrangler) |
+| `bun run db:seed` | Load `scripts/seed-local.sql` into local D1 (alias of `db:seed:local`) |
 | `bun run db:seed:local` | Load `scripts/seed-local.sql` into local D1 |
 | `bun run db:studio` | Drizzle Studio (local SQLite file) |
 | `bun run cf:deploy` / `cf:deploy:staging` | Deploy |
@@ -46,7 +66,7 @@ Before deploying to staging/production, update `wrangler.jsonc`:
 ### Database workflow
 
 1. **Migrate** (requires Node 22+ for `wrangler`): `bun run db:migrate`
-2. **Seed** (optional): `bun run db:seed:local`
+2. **Seed** (optional): `bun run db:seed` or `bun run db:seed:local`
 
 Local SQLite for Drizzle Kit / Studio lives at `.data/local.sqlite` by default (`SQLITE_PATH` overrides). Worker dev uses D1’s local simulation via Wrangler, not that file.
 

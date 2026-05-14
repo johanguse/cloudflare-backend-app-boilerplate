@@ -21,6 +21,11 @@ const patchMeBody = z
 		message: "At least one of name, avatar is required",
 	});
 
+const changePasswordBody = z.object({
+	currentPassword: z.string().min(1),
+	newPassword: z.string().min(8),
+});
+
 const deviceRegisterBody = z.object({
 	token: z.string().min(1),
 	platform: z.enum(["ios", "android"]),
@@ -80,6 +85,37 @@ userRoutes.get("/me", async (c) => {
 		);
 	}
 	return c.json({ data: publicUserRow(row) });
+});
+
+userRoutes.post("/me/change-password", async (c) => {
+	const session = c.get("session");
+	if (!session?.token) {
+		return c.json(
+			{
+				error: {
+					code: "UNAUTHORIZED",
+					message: "No active session",
+				},
+			},
+			401,
+		);
+	}
+	const body = await readJson(c, changePasswordBody);
+	const db = createDb(c.env.DB);
+	const auth = createAuth(c.env, db);
+	await auth.api.changePassword({
+		body: {
+			currentPassword: body.currentPassword,
+			newPassword: body.newPassword,
+		},
+		headers: headersWithSessionBearer(c.req.raw.headers, session.token),
+	});
+	return c.json({
+		data: {
+			success: true as const,
+			message: "Password updated",
+		},
+	});
 });
 
 userRoutes.patch("/me", async (c) => {

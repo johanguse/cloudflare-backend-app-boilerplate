@@ -15,6 +15,7 @@ export default defineConfig({
 		"./src/db/schema/uploads.ts",
 		"./src/db/schema/api-keys.ts",
 		"./src/db/schema/push-devices.ts",
+		"./src/db/schema/analyses.ts",
 	],
 	out: "./src/db/migrations",
 	...(isRemote

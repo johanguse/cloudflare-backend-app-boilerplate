@@ -1,5 +1,5 @@
 {
-	"name": "cloudflare-backend-app-boilerplate",
+	"name": "drape-ai-style-backend",
 	"private": true,
 	"version": "0.1.0",
 	"type": "module",
@@ -19,6 +19,7 @@
 		"db:migrate:staging": "wrangler d1 migrations apply DB --env staging --remote",
 		"db:migrate:prod": "wrangler d1 migrations apply DB --remote",
 		"db:studio": "drizzle-kit studio",
+		"db:seed": "wrangler d1 execute DB --local --file=./scripts/seed-local.sql",
 		"db:seed:local": "wrangler d1 execute DB --local --file=./scripts/seed-local.sql"
 	},
 	"dependencies": {

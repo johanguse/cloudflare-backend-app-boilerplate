@@ -4,3 +4,4 @@ export * from "./auth";
 export * from "./jwks";
 export * from "./push-devices";
 export * from "./uploads";
+export * from './analyses';

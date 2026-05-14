@@ -23,6 +23,7 @@ declare global {
 		APPLE_CLIENT_SECRET?: string;
 		/** Optional. When set, upload URLs use this public origin (R2 custom domain or CDN). */
 		R2_PUBLIC_BASE_URL?: string;
+		OPENROUTER_KEY?: string;
 	}
 }
 
