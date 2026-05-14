@@ -1,5 +1,15 @@
+import { and, desc, eq } from "drizzle-orm";
+import type { Handler } from "hono";
+import { Hono } from "hono";
+import * as z from "zod";
+
+import { analyses } from "@/db/schema/analyses";
+import { fileUploads } from "@/db/schema/uploads";
+import { createDb } from "@/lib/db";
+import type { HonoEnv } from "@/lib/types";
+import { requireActiveUser } from "@/middlewares/active-user";
 import { requireBearerAuth } from "@/middlewares/auth";
-import { getSignedUrl } from "@/lib/storage";
+import { getObject, getSignedUrl } from "@/lib/storage";
 
 const FREE_TIER_LIMIT = 2;
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
