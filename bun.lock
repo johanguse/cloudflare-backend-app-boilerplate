@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "drape-ai-style-backend",
+      "name": "cf-boilerplate-backend",
       "dependencies": {
         "better-auth": "^1.6.11",
         "drizzle-orm": "^0.45.2",
