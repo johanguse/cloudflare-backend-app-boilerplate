@@ -2,7 +2,10 @@
  * R2 object helpers. Public URLs require a custom domain or worker route; use `key` with your CDN path.
  */
 
+import { eq } from "drizzle-orm";
+import { fileUploads } from "@/db/schema";
 import { getConfig } from "./config";
+import { createDb } from "./db";
 
 const SIGNED_URL_TTL_SEC = 900; // 15 minutes
 const UPLOAD_KV_PREFIX = "upload_raw:";
@@ -18,9 +21,11 @@ export async function getSignedUrl(
 	}
 
 	const sig = crypto.randomUUID();
-	const [file] = await env.DB.select({
-		mimeType: fileUploads.mimeType,
-	})
+	const db = createDb(env.DB);
+	const [file] = await db
+		.select({
+			mimeType: fileUploads.mimeType,
+		})
 		.from(fileUploads)
 		.where(eq(fileUploads.storageKey, storageKey))
 		.limit(1);
