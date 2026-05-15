@@ -76,12 +76,12 @@ Local SQLite for Drizzle Kit / Studio lives at `.data/local.sqlite` by default (
 
 After running `bun run db:seed:local` the following records are available:
 
-#### Test users — all passwords: `password123`
+#### Test users
 
-| Email | Email verified | Notes |
-|-------|---------------|-------|
-| `seed@example.com` | Yes | Primary dev account, ready to sign in |
-| `unverified@example.com` | No | Use to test the email verification flow |
+| Email               | Password       | Email verified | Notes                                 |
+|---------------------|----------------|----------------|---------------------------------------|
+| `admin@drape.local` | `password123`  | Yes            | Primary dev account, ready to sign in |
+| `dev@drape.local`   | `DevSeed#2026` | Yes            | Secondary dev account                 |
 
 #### API key (server-to-server)
 
@@ -89,7 +89,7 @@ After running `bun run db:seed:local` the following records are available:
 |-------|-------|
 | Secret | `dev_sk_test_key_change_me` |
 | Prefix | `dev_sk_te` |
-| Owner | `seed@example.com` |
+| Owner | `admin@drape.local` |
 | Expires | Never (local only) |
 
 > The seed is idempotent (`INSERT OR IGNORE`) — safe to run multiple times.

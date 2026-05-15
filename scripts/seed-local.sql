@@ -4,10 +4,10 @@
 -- Apply:  bun run db:seed:local
 -- Reset:  delete the local D1 file, re-run migrations, then re-seed.
 --
--- Test accounts (all use password: password123)
+-- Test accounts
 -- ─────────────────────────────────────────────
---   seed@example.com       verified email, active account
---   unverified@example.com unverified email (tests verification flow)
+--   admin@drape.local    password: password123
+--   dev@drape.local      password: DevSeed#2026
 --
 -- API key secret for local tests (server-to-server):
 --   dev_sk_test_key_change_me  (prefix: dev_sk_te)
@@ -21,23 +21,23 @@
 INSERT OR IGNORE INTO "user"
   ("id", "name", "email", "email_verified", "image", "deleted_at", "created_at", "updated_at")
 VALUES
-  -- Verified user — ready to sign in immediately
+  -- Admin user — verified, ready to sign in immediately
   (
     'seed-user-001',
-    'Seed User',
-    'seed@example.com',
+    'Admin User',
+    'admin@drape.local',
     1,
     NULL,
     NULL,
     1704067200000,
     1704067200000
   ),
-  -- Unverified user — useful for testing the email-verification flow
+  -- Dev user — verified
   (
     'seed-user-002',
-    'Unverified User',
-    'unverified@example.com',
-    0,
+    'Dev User',
+    'dev@drape.local',
+    1,
     NULL,
     NULL,
     1706745600000,
@@ -46,7 +46,8 @@ VALUES
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Accounts (better-auth email/password credential provider)
--- password hash = bcrypt("password123", cost=10)
+-- Password hashes use better-auth's scrypt format: "salt:hexkey"
+-- (@better-auth/utils → @noble/hashes/scrypt, N=16384 r=16 p=1 dkLen=64)
 -- ─────────────────────────────────────────────────────────────────────────────
 
 INSERT OR IGNORE INTO "account"
@@ -60,21 +61,21 @@ INSERT OR IGNORE INTO "account"
 VALUES
   (
     'seed-account-001',
-    'seed@example.com',
+    'admin@drape.local',
     'credential',
     'seed-user-001',
     NULL, NULL, NULL, NULL, NULL, NULL,
-    '$2b$10$T6/RKYy8COA54KlYf5fJZeYLRp6BzYqlb23U4bzjBZ1MchQnpsmbm',
+    '9ba67f38a6e86578fa723c85a5ecb433:ccd05f0c7711b10b9b7eb765a48d986d29a9fc75eb2b8fcf9c7e965a6652936c2d8cfc9a3b300de4379adf9f1c5e58a03b779f934e67c726881091888a243bae',
     1704067200000,
     1704067200000
   ),
   (
     'seed-account-002',
-    'unverified@example.com',
+    'dev@drape.local',
     'credential',
     'seed-user-002',
     NULL, NULL, NULL, NULL, NULL, NULL,
-    '$2b$10$T6/RKYy8COA54KlYf5fJZeYLRp6BzYqlb23U4bzjBZ1MchQnpsmbm',
+    '3791df60a57db20a17f9ac90438b5b61:065eb9a6eab8f79b642a01a7e6a72b88debecad7456a6c27c986309c6261b192d5540f523790c986b2664e3beac702b9ad50e638cd43d68f7d39d9d919a53835',
     1706745600000,
     1706745600000
   );

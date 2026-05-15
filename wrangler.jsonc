@@ -12,7 +12,7 @@
 		"ENVIRONMENT": "local",
 		"APP_NAME": "CF Boilerplate Backend",
 		"BETTER_AUTH_URL": "http://localhost:8787",
-		"TRUSTED_ORIGINS": "http://localhost:8081,http://127.0.0.1:8081",
+		"TRUSTED_ORIGINS": "http://localhost:8081,http://127.0.0.1:8081,http://192.168.100.124:8081,http://192.168.100.124:8787",
 		"RESEND_FROM_EMAIL": "onboarding@resend.dev"
 	},
 	"d1_databases": [
