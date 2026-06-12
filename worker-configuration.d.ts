@@ -9,14 +9,14 @@ declare global {
 		SESSION_KV: KVNamespace;
 		CACHE_KV: KVNamespace;
 		STORAGE: R2Bucket;
+		EMAIL?: SendEmail;
 		ENVIRONMENT: string;
 		APP_NAME: string;
 		BETTER_AUTH_URL: string;
 		TRUSTED_ORIGINS: string;
-		RESEND_FROM_EMAIL: string;
+		FROM_EMAIL: string;
 		/** Min 32 chars in staging/production. Optional locally (see `getConfig`). */
 		BETTER_AUTH_SECRET?: string;
-		RESEND_API_KEY?: string;
 		GOOGLE_CLIENT_ID?: string;
 		GOOGLE_CLIENT_SECRET?: string;
 		APPLE_CLIENT_ID?: string;

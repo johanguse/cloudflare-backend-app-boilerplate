@@ -15,6 +15,7 @@
 		"TRUSTED_ORIGINS": "http://localhost:8081,http://127.0.0.1:8081,http://192.168.100.124:8081,http://192.168.100.124:8787",
 		"RESEND_FROM_EMAIL": "onboarding@resend.dev"
 	},
+	"send_email": [{ "name": "EMAIL" }],
 	"d1_databases": [
 		{
 			"binding": "DB",
@@ -47,8 +48,9 @@
 				"APP_NAME": "CF Boilerplate Backend (Staging)",
 				"BETTER_AUTH_URL": "https://api-staging.example.com",
 				"TRUSTED_ORIGINS": "https://api-staging.example.com",
-				"RESEND_FROM_EMAIL": "onboarding@resend.dev"
+				"FROM_EMAIL": "noreply@example.com"
 			},
+			"send_email": [{ "name": "EMAIL" }],
 			"d1_databases": [
 				{
 					"binding": "DB",
@@ -70,8 +72,9 @@
 				"APP_NAME": "CF Boilerplate Backend",
 				"BETTER_AUTH_URL": "https://api.example.com",
 				"TRUSTED_ORIGINS": "https://api.example.com",
-				"RESEND_FROM_EMAIL": "onboarding@resend.dev"
+				"FROM_EMAIL": "noreply@example.com"
 			},
+			"send_email": [{ "name": "EMAIL" }],
 			"d1_databases": [
 				{
 					"binding": "DB",

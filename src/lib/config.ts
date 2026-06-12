@@ -5,13 +5,12 @@ const configSchema = z.object({
 	appName: z.string().min(1),
 	baseUrl: z.string().url(),
 	trustedOrigins: z.array(z.string().min(1)),
-	resendFromEmail: z.string().email().or(z.string().min(1)),
+	fromEmail: z.string().email().or(z.string().min(1)),
 	authSecret: z.string(),
 	googleClientId: z.string().optional(),
 	googleClientSecret: z.string().optional(),
 	appleClientId: z.string().optional(),
 	appleClientSecret: z.string().optional(),
-	resendApiKey: z.string().optional(),
 	/** If set, `GET /api/v1/uploads/:key/url` returns this base joined with the object key (public buckets / CDN). */
 	r2PublicBaseUrl: z.string().url().optional(),
 });
@@ -27,13 +26,12 @@ export function getConfig(env: Env): AppConfig {
 		appName: env.APP_NAME,
 		baseUrl: env.BETTER_AUTH_URL,
 		trustedOrigins,
-		resendFromEmail: env.RESEND_FROM_EMAIL,
+		fromEmail: env.FROM_EMAIL,
 		authSecret: env.BETTER_AUTH_SECRET ?? "",
 		googleClientId: env.GOOGLE_CLIENT_ID || undefined,
 		googleClientSecret: env.GOOGLE_CLIENT_SECRET || undefined,
 		appleClientId: env.APPLE_CLIENT_ID || undefined,
 		appleClientSecret: env.APPLE_CLIENT_SECRET || undefined,
-		resendApiKey: env.RESEND_API_KEY || undefined,
 		r2PublicBaseUrl: env.R2_PUBLIC_BASE_URL?.trim()
 			? env.R2_PUBLIC_BASE_URL.trim()
 			: undefined,

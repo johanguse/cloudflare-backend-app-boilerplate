@@ -85,7 +85,7 @@ cloudflare-backend-app-boilerplate/
 │   │   ├── config.ts            # Env var validation + typed config
 │   │   ├── db.ts                # Drizzle client factory
 │   │   ├── storage.ts           # R2 upload/download/delete helpers
-│   │   ├── email.ts             # Resend email service
+│   │   ├── email.ts             # Cloudflare Email Service
 │   │   └── types.ts             # Global types (Env, HonoContext, etc.)
 │   │
 │   ├── middlewares/
@@ -186,7 +186,7 @@ The `ASSETS` binding and SPA fallback are removed. The worker is purely API. A d
     { "binding": "CACHE_KV", "id": "..." }
   ],
   "r2_buckets": [{ "binding": "STORAGE", "bucket_name": "app-storage" }],
-  "send_email": [{ "name": "EMAIL" }]  // or use Resend via API key
+  "send_email": [{ "name": "EMAIL" }]
 }
 ```
 
@@ -223,7 +223,7 @@ Access token: **15 min** | Refresh token: **30 days** | Stored in device secure 
 
 - **Vitest** with Cloudflare Workers pool (same as fullstack boilerplate)
 - Integration tests against real in-process worker (no mocking the runtime)
-- Test fixtures: seeded D1 in-memory, mocked R2, mocked Resend
+- Test fixtures: seeded D1 in-memory, mocked R2, mocked Cloudflare Email
 - Gate: `bun test` must pass before deploy
 
 ---

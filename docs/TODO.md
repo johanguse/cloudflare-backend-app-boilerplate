@@ -44,8 +44,8 @@ Legend: `[ ]` not started · `[~]` in progress · `[x]` done
 - [x] **3.2** Create `src/lib/config.ts` — Zod-validated `getConfig(env)`, dev default for short `BETTER_AUTH_SECRET` when `ENVIRONMENT` is local/development
 - [x] **3.3** Create `src/lib/auth.ts` — Better Auth + Drizzle (auth + `jwks` tables), `bearer` + `jwt` (15m access) + `emailOTP`, KV `secondaryStorage`, `session.storeSessionInDatabase`, Google/Apple when env vars set, rate limit on secondary storage
 - [x] **3.4** Create `src/lib/storage.ts` — `uploadFile`, `getObject`, `deleteFile`, `publicFileUrl`
-- [x] **3.5** Create `src/lib/email.ts` — Resend when `RESEND_API_KEY` is set; console logging in dev; verification, reset, OTP helpers
-- [x] **3.x** Mount Better Auth on `app.all("/api/auth/*")` in `src/index.ts`; migration `0001_*` adds `jwks` table; `0002_*` drops legacy organization tables if present; `wrangler.jsonc` `RESEND_FROM_EMAIL`; `worker-configuration.d.ts` secrets/vars
+- [x] **3.5** Create `src/lib/email.ts` — Cloudflare Email Service binding; console logging in dev; verification, reset, OTP helpers
+- [x] **3.x** Mount Better Auth on `app.all("/api/auth/*")` in `src/index.ts`; migration `0001_*` adds `jwks` table; `0002_*` drops legacy organization tables if present; `wrangler.jsonc` `FROM_EMAIL`; `worker-configuration.d.ts` secrets/vars
 
 ---
 
