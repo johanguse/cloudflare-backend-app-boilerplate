@@ -13,9 +13,16 @@
 		"APP_NAME": "CF Boilerplate Backend",
 		"BETTER_AUTH_URL": "http://localhost:8787",
 		"TRUSTED_ORIGINS": "http://localhost:8081,http://127.0.0.1:8081,http://192.168.100.124:8081,http://192.168.100.124:8787",
-		"RESEND_FROM_EMAIL": "onboarding@resend.dev"
+		// Domain must be onboarded: `wrangler email sending enable <domain>`.
+		"FROM_EMAIL": "noreply@guseapp.com",
+		// Any Workers AI text-generation model that takes a `messages` array.
+		"AI_MODEL": "@cf/meta/llama-3.1-8b-instruct"
 	},
-	"send_email": [{ "name": "EMAIL" }],
+	"ai": { "binding": "AI" },
+	// `remote: true` proxies local sends to the real service; without it workerd
+	// simulates them and nothing is delivered. Local dev logs instead of sending
+	// unless EMAIL_DEV_DELIVERY=true — see `src/lib/email.ts`.
+	"send_email": [{ "name": "EMAIL", "remote": true }],
 	"d1_databases": [
 		{
 			"binding": "DB",
@@ -48,8 +55,10 @@
 				"APP_NAME": "CF Boilerplate Backend (Staging)",
 				"BETTER_AUTH_URL": "https://api-staging.example.com",
 				"TRUSTED_ORIGINS": "https://api-staging.example.com",
-				"FROM_EMAIL": "noreply@example.com"
+				"FROM_EMAIL": "noreply@example.com",
+				"AI_MODEL": "@cf/meta/llama-3.1-8b-instruct"
 			},
+			"ai": { "binding": "AI" },
 			"send_email": [{ "name": "EMAIL" }],
 			"d1_databases": [
 				{
@@ -72,8 +81,10 @@
 				"APP_NAME": "CF Boilerplate Backend",
 				"BETTER_AUTH_URL": "https://api.example.com",
 				"TRUSTED_ORIGINS": "https://api.example.com",
-				"FROM_EMAIL": "noreply@example.com"
+				"FROM_EMAIL": "noreply@example.com",
+				"AI_MODEL": "@cf/meta/llama-3.1-8b-instruct"
 			},
+			"ai": { "binding": "AI" },
 			"send_email": [{ "name": "EMAIL" }],
 			"d1_databases": [
 				{

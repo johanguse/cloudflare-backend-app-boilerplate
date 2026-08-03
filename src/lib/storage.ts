@@ -10,9 +10,18 @@ import { createDb } from "./db";
 const SIGNED_URL_TTL_SEC = 900; // 15 minutes
 const UPLOAD_KV_PREFIX = "upload_raw:";
 
+/**
+ * Avatars are re-resolved on every `GET /users/me`, but the app caches the user
+ * object for the whole session — a 15-minute link would 404 on a long-running
+ * screen. A week outlives any realistic session without the link becoming a
+ * durable public handle.
+ */
+export const AVATAR_URL_TTL_SEC = 60 * 60 * 24 * 7;
+
 export async function getSignedUrl(
 	env: Env,
 	storageKey: string,
+	ttlSeconds: number = SIGNED_URL_TTL_SEC,
 ): Promise<string | null> {
 	const config = getConfig(env);
 
@@ -38,7 +47,7 @@ export async function getSignedUrl(
 			storageKey,
 			mimeType: file.mimeType,
 		}),
-		{ expirationTtl: SIGNED_URL_TTL_SEC },
+		{ expirationTtl: ttlSeconds },
 	);
 
 	const base = config.baseUrl.replace(/\/$/, "");

@@ -1,7 +1,10 @@
 # Copy to `.dev.vars` for `bun run dev` (never commit `.dev.vars`).
 # If `BETTER_AUTH_SECRET` is unset and `ENVIRONMENT` is local/development, a dev-only default is used (`src/lib/config.ts`).
 BETTER_AUTH_SECRET=
-# RESEND_API_KEY=
+# Email is sent through the Cloudflare `EMAIL` binding — no API key needed.
+# Local dev logs verification/reset links to the console instead of sending.
+# Set this to actually deliver (the FROM_EMAIL domain must be onboarded):
+# EMAIL_DEV_DELIVERY=true
 # GOOGLE_CLIENT_ID=
 # GOOGLE_CLIENT_SECRET=
 # APPLE_CLIENT_ID=
@@ -13,7 +16,7 @@ BETTER_AUTH_SECRET=
 # The following are only needed for running `drizzle-kit` against a remote D1 database.
 # DRIZZLE_D1_REMOTE=true
 #
-# `RESEND_FROM_EMAIL` is set in `wrangler.jsonc` → `vars`; change there or per-environment blocks.
+# `FROM_EMAIL` is set in `wrangler.jsonc` → `vars`; change there or per-environment blocks.
 
 # Cloudflare R2
 CLOUDFLARE_R2_ACCOUNT_ID='6a04bef79e697bf63fdc0587f95abb25'

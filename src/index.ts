@@ -8,6 +8,7 @@ import { corsMiddleware } from "@/middlewares/cors";
 import { globalErrorHandler } from "@/middlewares/error";
 import { apiKeyRoutes } from "@/routes/api-keys";
 import { authRoutes } from "@/routes/auth";
+import { chatRoutes } from "@/routes/chat";
 import { healthRoutes } from "@/routes/health";
 import { uploadRoutes } from "@/routes/uploads";
 import { userRoutes } from "@/routes/users";
@@ -28,6 +29,8 @@ app.route("/api/v1/users", userRoutes);
 app.route("/api/v1/uploads", uploadRoutes);
 
 app.route("/api/v1/analyses", analysisRoutes);
+
+app.route("/api/v1/chat", chatRoutes);
 
 app.route("/api/v1/api-keys", apiKeyRoutes);
 

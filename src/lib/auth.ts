@@ -44,6 +44,36 @@ export function createAuth(env: Env, db: Database) {
 		baseURL: config.baseUrl,
 		basePath: "/api/auth",
 		trustedOrigins: config.trustedOrigins,
+		user: {
+			/**
+			 * Profile columns beyond Better Auth's core `user` table. Declaring them
+			 * here is what lets `auth.api.updateUser` persist them and keeps the
+			 * session snapshot in secondary storage (KV) from going stale.
+			 *
+			 * Clients can't smuggle these in at sign-up — `registerBody` in
+			 * `routes/auth.ts` is a strict schema that only forwards email, password
+			 * and name. They're set through `PATCH /api/v1/users/me`.
+			 */
+			additionalFields: {
+				bio: { type: "string", required: false },
+				company: { type: "string", required: false },
+				jobTitle: { type: "string", required: false },
+				phone: { type: "string", required: false },
+				website: { type: "string", required: false },
+				country: { type: "string", required: false },
+				timezone: { type: "string", required: false },
+				onboardingCompleted: {
+					type: "boolean",
+					required: false,
+					defaultValue: false,
+				},
+				onboardingStep: {
+					type: "number",
+					required: false,
+					defaultValue: 0,
+				},
+			},
+		},
 		emailAndPassword: {
 			enabled: true,
 			minPasswordLength: 8,

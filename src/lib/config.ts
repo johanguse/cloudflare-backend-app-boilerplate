@@ -37,7 +37,11 @@ export function getConfig(env: Env): AppConfig {
 			: undefined,
 	});
 	if (!parsed.success) {
-		const msg = parsed.error.issues.map((i) => i.message).join("; ");
+		// Include the field — a bare "Invalid input" gives no clue which var in
+		// wrangler.jsonc / .dev.vars is missing or malformed.
+		const msg = parsed.error.issues
+			.map((i) => `${i.path.join(".") || "(root)"}: ${i.message}`)
+			.join("; ");
 		throw new Error(`Invalid configuration: ${msg}`);
 	}
 	const c = parsed.data;

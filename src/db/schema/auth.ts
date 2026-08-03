@@ -9,7 +9,24 @@ export const user = sqliteTable("user", {
 	name: text("name").notNull(),
 	email: text("email").notNull().unique(),
 	emailVerified: integer("email_verified", { mode: "boolean" }).notNull(),
+	/** Avatar. Either an R2 storage key (uploaded) or an absolute URL (OAuth). */
 	image: text("image"),
+	/**
+	 * Optional profile fields. Declared as Better Auth `additionalFields` in
+	 * `lib/auth.ts` so `auth.api.updateUser` writes them and the cached session
+	 * stays in sync — don't write these with a bare Drizzle update.
+	 */
+	bio: text("bio"),
+	company: text("company"),
+	jobTitle: text("job_title"),
+	phone: text("phone"),
+	website: text("website"),
+	country: text("country"),
+	timezone: text("timezone"),
+	onboardingCompleted: integer("onboarding_completed", { mode: "boolean" })
+		.notNull()
+		.default(false),
+	onboardingStep: integer("onboarding_step").notNull().default(0),
 	/** Set when the user schedules account deletion (soft delete). */
 	deletedAt: integer("deleted_at", { mode: "timestamp" }),
 	createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
