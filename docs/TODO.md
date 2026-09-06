@@ -162,14 +162,14 @@ Legend: `[ ]` not started · `[~]` in progress · `[x]` done
 
 ## Phase 11 — Scripts & DX
 
-- [ ] **11.1** Add all npm scripts to `package.json`
+- [x] **11.1** Add all npm scripts to `package.json`
   - `dev`, `build`, `build:staging`, `build:production`
   - `cf:deploy`, `cf:deploy:staging`, `cf:check`
   - `db:generate`, `db:migrate`, `db:migrate:staging`, `db:migrate:prod`
   - `db:seed:local`, `db:studio`
   - `check` (Biome), `type-check`, `test`, `test:run`
-- [ ] **11.2** Create `scripts/generate-openapi.ts` — auto-generate OpenAPI spec from Hono routes
-- [~] **11.3** Create `README.md` — setup instructions, env var reference, deployment guide (`README.md` started; expand with full env reference after Phase 3)
+- [x] **11.2** Create `scripts/generate-openapi.ts` — generates `docs/openapi.json` from the route registry + zod schemas in `src/lib/schemas.ts` (`bun run openapi:generate`)
+- [x] **11.3** Create `README.md` — setup instructions, env var reference, deployment guide
 
 ---
 
@@ -182,10 +182,10 @@ Legend: `[ ]` not started · `[~]` in progress · `[x]` done
   - APNS (iOS) via `node-apn` or Cloudflare Worker + APNS HTTP/2
   - FCM (Android) via `firebase-admin` or FCM v1 REST API
   - `POST /api/v1/notifications/send` (internal)
-- [ ] **12.3** Rate limiting via KV
-  - Sliding window counter per `userId` or `IP`
-  - Configurable limits per route
-- [ ] **12.4** Sentry error tracking
+- [x] **12.3** Rate limiting via KV
+  - Sliding-window counter (`src/lib/rate-limit.ts`) backed by `CACHE_KV`, keyed by `userId` (when authenticated) or IP
+  - Per-route limits: global `/api/v1/*` baseline, tighter auth login/register/email-action limits, per-user chat and analysis-creation limits
+- [x] **12.4** Sentry error tracking — `@sentry/cloudflare` (`Sentry.withSentry` in `src/index.ts`, `Sentry.captureException` in `src/middlewares/error.ts` for unexpected 500s only). No-op until `SENTRY_DSN` is set.
 - [ ] **12.5** OpenAPI client generation
   - TypeScript client: `openapi-typescript` → for Expo apps
   - Swift client: `CreateAPI` or `swift-openapi-generator` → for iOS apps

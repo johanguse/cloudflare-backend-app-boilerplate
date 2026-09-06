@@ -30,6 +30,8 @@ declare global {
 		/** Workers AI text-generation model used by `POST /api/v1/chat/stream`. */
 		AI_MODEL?: string;
 		OPENROUTER_KEY?: string;
+		/** Sentry DSN. Unset disables error tracking entirely (see `src/index.ts`). */
+		SENTRY_DSN?: string;
 	}
 }
 

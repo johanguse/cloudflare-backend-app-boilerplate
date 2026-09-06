@@ -1,0 +1,3023 @@
+{
+	"openapi": "3.1.0",
+	"info": {
+		"title": "Cloudflare Backend Boilerplate API",
+		"version": "0.1.0",
+		"description": "API-only Cloudflare Worker (Hono) for mobile clients. Generated from src/routes/* and src/lib/schemas.ts — see scripts/generate-openapi.ts."
+	},
+	"servers": [
+		{
+			"url": "http://127.0.0.1:8787",
+			"description": "Local dev"
+		}
+	],
+	"components": {
+		"securitySchemes": {
+			"bearerAuth": {
+				"type": "http",
+				"scheme": "bearer",
+				"bearerFormat": "JWT",
+				"description": "Better Auth JWT access token (15m). Also accepts an opaque session/API token on some routes — see docs/README."
+			}
+		}
+	},
+	"tags": [
+		{
+			"name": "Health"
+		},
+		{
+			"name": "Auth"
+		},
+		{
+			"name": "Users"
+		},
+		{
+			"name": "Uploads"
+		},
+		{
+			"name": "API Keys"
+		},
+		{
+			"name": "Analyses"
+		},
+		{
+			"name": "Chat"
+		}
+	],
+	"paths": {
+		"/health": {
+			"get": {
+				"tags": [
+					"Health"
+				],
+				"summary": "Liveness check",
+				"responses": {
+					"200": {
+						"description": "Worker is running",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"data": {}
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/health": {
+			"get": {
+				"tags": [
+					"Health"
+				],
+				"summary": "Liveness check (versioned)",
+				"responses": {
+					"200": {
+						"description": "Worker is running",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"data": {}
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/health/db": {
+			"get": {
+				"tags": [
+					"Health"
+				],
+				"summary": "D1 connectivity check",
+				"responses": {
+					"200": {
+						"description": "Database is reachable",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"data": {}
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/auth/register": {
+			"post": {
+				"tags": [
+					"Auth"
+				],
+				"summary": "Register with email + password",
+				"responses": {
+					"200": {
+						"description": "User created; tokens issued when email/password sign-up completes immediately",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"data": {}
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					}
+				},
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"email": {
+										"type": "string",
+										"format": "email"
+									},
+									"password": {
+										"type": "string",
+										"minLength": 1
+									},
+									"name": {
+										"type": "string",
+										"minLength": 1
+									}
+								},
+								"required": [
+									"email",
+									"password",
+									"name"
+								],
+								"additionalProperties": false
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/auth/login": {
+			"post": {
+				"tags": [
+					"Auth"
+				],
+				"summary": "Log in with email + password",
+				"responses": {
+					"200": {
+						"description": "User + access/refresh tokens",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"data": {}
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					}
+				},
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"email": {
+										"type": "string",
+										"format": "email"
+									},
+									"password": {
+										"type": "string",
+										"minLength": 1
+									}
+								},
+								"required": [
+									"email",
+									"password"
+								],
+								"additionalProperties": false
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/auth/logout": {
+			"post": {
+				"tags": [
+					"Auth"
+				],
+				"summary": "Revoke the current session",
+				"responses": {
+					"200": {
+						"description": "Session revoked",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"data": {}
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearerAuth": []
+					}
+				]
+			}
+		},
+		"/api/v1/auth/refresh": {
+			"post": {
+				"tags": [
+					"Auth"
+				],
+				"summary": "Exchange a refresh token for a new access/refresh pair",
+				"responses": {
+					"200": {
+						"description": "New access/refresh tokens",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"data": {}
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					}
+				},
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"refreshToken": {
+										"type": "string",
+										"minLength": 1
+									}
+								},
+								"required": [
+									"refreshToken"
+								],
+								"additionalProperties": false
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/auth/verify-email": {
+			"post": {
+				"tags": [
+					"Auth"
+				],
+				"summary": "Verify an email address with a token",
+				"responses": {
+					"200": {
+						"description": "Verification status + user",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"data": {}
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					}
+				},
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"token": {
+										"type": "string",
+										"minLength": 1
+									}
+								},
+								"required": [
+									"token"
+								],
+								"additionalProperties": false
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/auth/resend-verification": {
+			"post": {
+				"tags": [
+					"Auth"
+				],
+				"summary": "Resend the verification email",
+				"responses": {
+					"200": {
+						"description": "Email sent when the account exists",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"data": {}
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					}
+				},
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"email": {
+										"type": "string",
+										"format": "email"
+									}
+								},
+								"required": [
+									"email"
+								],
+								"additionalProperties": false
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/auth/forgot-password": {
+			"post": {
+				"tags": [
+					"Auth"
+				],
+				"summary": "Request a password reset email",
+				"responses": {
+					"200": {
+						"description": "Reset email sent when the account exists",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"data": {}
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					}
+				},
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"email": {
+										"type": "string",
+										"format": "email"
+									}
+								},
+								"required": [
+									"email"
+								],
+								"additionalProperties": false
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/auth/reset-password": {
+			"post": {
+				"tags": [
+					"Auth"
+				],
+				"summary": "Reset a password with a reset token",
+				"responses": {
+					"200": {
+						"description": "Password reset status",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"data": {}
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					}
+				},
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"token": {
+										"type": "string",
+										"minLength": 1
+									},
+									"newPassword": {
+										"type": "string",
+										"minLength": 1
+									}
+								},
+								"required": [
+									"token",
+									"newPassword"
+								],
+								"additionalProperties": false
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/auth/google": {
+			"get": {
+				"tags": [
+					"Auth"
+				],
+				"summary": "Start the Google OAuth browser flow",
+				"responses": {
+					"200": {
+						"description": "Authorization URL to redirect the browser to",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"data": {}
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					}
+				}
+			},
+			"post": {
+				"tags": [
+					"Auth"
+				],
+				"summary": "Sign in with Google (native ID token)",
+				"responses": {
+					"200": {
+						"description": "User + access/refresh tokens",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"data": {}
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					}
+				},
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"idToken": {
+										"type": "string",
+										"minLength": 1
+									},
+									"nonce": {
+										"type": "string"
+									},
+									"accessToken": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"idToken"
+								],
+								"additionalProperties": false
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/auth/apple": {
+			"post": {
+				"tags": [
+					"Auth"
+				],
+				"summary": "Sign in with Apple (native identity token)",
+				"responses": {
+					"200": {
+						"description": "User + access/refresh tokens",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"data": {}
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					}
+				},
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"identityToken": {
+										"type": "string",
+										"minLength": 1
+									},
+									"authorizationCode": {
+										"type": "string"
+									},
+									"fullName": {
+										"type": "object",
+										"properties": {
+											"givenName": {
+												"type": "string"
+											},
+											"familyName": {
+												"type": "string"
+											}
+										},
+										"additionalProperties": false
+									}
+								},
+								"required": [
+									"identityToken"
+								],
+								"additionalProperties": false
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/auth/change-password": {
+			"post": {
+				"tags": [
+					"Auth"
+				],
+				"summary": "Change the signed-in user's password",
+				"responses": {
+					"200": {
+						"description": "Password changed",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"data": {}
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearerAuth": []
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"currentPassword": {
+										"type": "string",
+										"minLength": 1
+									},
+									"newPassword": {
+										"type": "string",
+										"minLength": 8
+									}
+								},
+								"required": [
+									"currentPassword",
+									"newPassword"
+								],
+								"additionalProperties": false
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/users/me": {
+			"get": {
+				"tags": [
+					"Users"
+				],
+				"summary": "Get the current user's profile",
+				"responses": {
+					"200": {
+						"description": "User profile",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"data": {}
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearerAuth": []
+					}
+				]
+			},
+			"patch": {
+				"tags": [
+					"Users"
+				],
+				"summary": "Update the current user's profile",
+				"responses": {
+					"200": {
+						"description": "Updated user profile",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"data": {}
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearerAuth": []
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"name": {
+										"type": "string",
+										"minLength": 1,
+										"maxLength": 120
+									},
+									"avatar": {
+										"type": [
+											"string",
+											"null"
+										]
+									},
+									"bio": {
+										"anyOf": [
+											{
+												"type": "string",
+												"maxLength": 500
+											},
+											{
+												"type": "null"
+											}
+										]
+									},
+									"company": {
+										"anyOf": [
+											{
+												"type": "string",
+												"maxLength": 120
+											},
+											{
+												"type": "null"
+											}
+										]
+									},
+									"jobTitle": {
+										"anyOf": [
+											{
+												"type": "string",
+												"maxLength": 120
+											},
+											{
+												"type": "null"
+											}
+										]
+									},
+									"phone": {
+										"anyOf": [
+											{
+												"type": "string",
+												"maxLength": 40
+											},
+											{
+												"type": "null"
+											}
+										]
+									},
+									"website": {
+										"anyOf": [
+											{
+												"type": "string",
+												"maxLength": 200
+											},
+											{
+												"type": "null"
+											}
+										]
+									},
+									"country": {
+										"anyOf": [
+											{
+												"type": "string",
+												"maxLength": 80
+											},
+											{
+												"type": "null"
+											}
+										]
+									},
+									"timezone": {
+										"anyOf": [
+											{
+												"type": "string",
+												"maxLength": 64
+											},
+											{
+												"type": "null"
+											}
+										]
+									},
+									"onboardingCompleted": {
+										"type": "boolean"
+									},
+									"onboardingStep": {
+										"type": "integer",
+										"minimum": 0,
+										"maximum": 100
+									}
+								},
+								"additionalProperties": false
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"tags": [
+					"Users"
+				],
+				"summary": "Soft-delete the current user's account",
+				"responses": {
+					"200": {
+						"description": "Account deleted",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"data": {}
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearerAuth": []
+					}
+				]
+			}
+		},
+		"/api/v1/users/me/change-password": {
+			"post": {
+				"tags": [
+					"Users"
+				],
+				"summary": "Change the current user's password",
+				"responses": {
+					"200": {
+						"description": "Password updated",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"data": {}
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearerAuth": []
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"currentPassword": {
+										"type": "string",
+										"minLength": 1
+									},
+									"newPassword": {
+										"type": "string",
+										"minLength": 8
+									}
+								},
+								"required": [
+									"currentPassword",
+									"newPassword"
+								],
+								"additionalProperties": false
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/users/me/avatar": {
+			"post": {
+				"tags": [
+					"Users"
+				],
+				"summary": "Upload a profile avatar (multipart/form-data, field `file`)",
+				"responses": {
+					"200": {
+						"description": "Updated user profile with new avatar URL",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"data": {}
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearerAuth": []
+					}
+				]
+			},
+			"delete": {
+				"tags": [
+					"Users"
+				],
+				"summary": "Remove the current user's avatar",
+				"responses": {
+					"200": {
+						"description": "Avatar removed",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"data": {}
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearerAuth": []
+					}
+				]
+			}
+		},
+		"/api/v1/users/me/devices": {
+			"post": {
+				"tags": [
+					"Users"
+				],
+				"summary": "Register a push notification device token",
+				"responses": {
+					"200": {
+						"description": "Device token registered or updated",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"data": {}
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearerAuth": []
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"token": {
+										"type": "string",
+										"minLength": 1
+									},
+									"platform": {
+										"type": "string",
+										"enum": [
+											"ios",
+											"android"
+										]
+									}
+								},
+								"required": [
+									"token",
+									"platform"
+								],
+								"additionalProperties": false
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/users/me/devices/{token}": {
+			"delete": {
+				"tags": [
+					"Users"
+				],
+				"summary": "Unregister a push notification device token",
+				"responses": {
+					"200": {
+						"description": "Device token removed",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"data": {}
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearerAuth": []
+					}
+				],
+				"parameters": [
+					{
+						"name": "token",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/v1/uploads": {
+			"post": {
+				"tags": [
+					"Uploads"
+				],
+				"summary": "Upload a file to R2 (multipart/form-data field `file`, or JSON base64)",
+				"responses": {
+					"200": {
+						"description": "Stored object key, URL (if public), size and MIME type",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"data": {}
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearerAuth": []
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"fileBase64": {
+										"type": "string",
+										"minLength": 1
+									},
+									"mimeType": {
+										"type": "string",
+										"minLength": 1
+									},
+									"filename": {
+										"type": "string"
+									}
+								},
+								"required": [
+									"fileBase64",
+									"mimeType"
+								],
+								"additionalProperties": false
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/uploads/{key}/url": {
+			"get": {
+				"tags": [
+					"Uploads"
+				],
+				"summary": "Get a time-limited URL for a private upload",
+				"responses": {
+					"200": {
+						"description": "Signed/public URL and expiry",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"data": {}
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearerAuth": []
+					}
+				],
+				"parameters": [
+					{
+						"name": "key",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/v1/uploads/{key}": {
+			"delete": {
+				"tags": [
+					"Uploads"
+				],
+				"summary": "Delete an uploaded file",
+				"responses": {
+					"200": {
+						"description": "File deleted",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"data": {}
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearerAuth": []
+					}
+				],
+				"parameters": [
+					{
+						"name": "key",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/v1/api-keys": {
+			"get": {
+				"tags": [
+					"API Keys"
+				],
+				"summary": "List the current user's API keys",
+				"responses": {
+					"200": {
+						"description": "API keys (prefix only, no secret)",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"data": {}
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearerAuth": []
+					}
+				]
+			},
+			"post": {
+				"tags": [
+					"API Keys"
+				],
+				"summary": "Create an API key",
+				"responses": {
+					"200": {
+						"description": "The full secret — shown once",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"data": {}
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearerAuth": []
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"name": {
+										"type": "string",
+										"minLength": 1,
+										"maxLength": 128
+									}
+								},
+								"required": [
+									"name"
+								],
+								"additionalProperties": false
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/api-keys/{id}": {
+			"delete": {
+				"tags": [
+					"API Keys"
+				],
+				"summary": "Revoke an API key",
+				"responses": {
+					"200": {
+						"description": "API key revoked",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"data": {}
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearerAuth": []
+					}
+				],
+				"parameters": [
+					{
+						"name": "id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/v1/analyses": {
+			"post": {
+				"tags": [
+					"Analyses"
+				],
+				"summary": "Run an AI style/photo analysis on a previously uploaded photo",
+				"responses": {
+					"200": {
+						"description": "Analysis result",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"data": {}
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearerAuth": []
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"analysisType": {
+										"type": "string",
+										"enum": [
+											"color",
+											"style",
+											"hair",
+											"age",
+											"outfit"
+										]
+									},
+									"photoKey": {
+										"type": "string",
+										"minLength": 1
+									}
+								},
+								"required": [
+									"analysisType",
+									"photoKey"
+								],
+								"additionalProperties": false
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/analyses/history": {
+			"get": {
+				"tags": [
+					"Analyses"
+				],
+				"summary": "List the current user's past analyses",
+				"responses": {
+					"200": {
+						"description": "Analysis history",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"data": {}
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearerAuth": []
+					}
+				]
+			}
+		},
+		"/api/v1/chat/stream": {
+			"post": {
+				"tags": [
+					"Chat"
+				],
+				"summary": "Stream a chat completion from Workers AI (Server-Sent Events)",
+				"responses": {
+					"200": {
+						"description": "`text/event-stream` of `data: {\"response\": \"...\"}` frames, terminated by `data: [DONE]`",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"data": {}
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Structured error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "object",
+											"properties": {
+												"code": {
+													"type": "string"
+												},
+												"message": {
+													"type": "string"
+												},
+												"details": {}
+											},
+											"required": [
+												"code",
+												"message"
+											]
+										}
+									},
+									"required": [
+										"error"
+									]
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearerAuth": []
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"messages": {
+										"type": "array",
+										"items": {
+											"type": "object",
+											"properties": {
+												"role": {
+													"type": "string",
+													"enum": [
+														"user",
+														"assistant",
+														"system"
+													]
+												},
+												"content": {
+													"type": "string",
+													"minLength": 1,
+													"maxLength": 8000
+												}
+											},
+											"required": [
+												"role",
+												"content"
+											],
+											"additionalProperties": false
+										},
+										"minItems": 1,
+										"maxItems": 40
+									}
+								},
+								"required": [
+									"messages"
+								],
+								"additionalProperties": false
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}

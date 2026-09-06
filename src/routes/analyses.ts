@@ -1,15 +1,16 @@
 import { and, desc, eq } from "drizzle-orm";
 import type { Handler } from "hono";
 import { Hono } from "hono";
-import * as z from "zod";
 
 import { analyses } from "@/db/schema/analyses";
 import { fileUploads } from "@/db/schema/uploads";
 import { createDb } from "@/lib/db";
+import { rateLimiter } from "@/lib/rate-limit";
+import { createAnalysisBody as createAnalysisSchema } from "@/lib/schemas";
+import { getObject, getSignedUrl } from "@/lib/storage";
 import type { HonoEnv } from "@/lib/types";
 import { requireActiveUser } from "@/middlewares/active-user";
 import { requireBearerAuth } from "@/middlewares/auth";
-import { getObject, getSignedUrl } from "@/lib/storage";
 
 const FREE_TIER_LIMIT = 2;
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
@@ -214,11 +215,6 @@ Return this exact structure:
 }`,
 };
 
-const createAnalysisSchema = z.object({
-	analysisType: z.enum(["color", "style", "hair", "age", "outfit"]),
-	photoKey: z.string().min(1),
-});
-
 export const analysisRoutes = new Hono<HonoEnv>();
 
 analysisRoutes.use("*", requireBearerAuth);
@@ -353,7 +349,9 @@ const createAnalysisHandler: Handler<HonoEnv> = async (c) => {
 	const r2Obj = await getObject(c.env.STORAGE, photoKey);
 	if (!r2Obj) {
 		return c.json(
-			{ error: { code: "NOT_FOUND", message: "Photo data missing in storage" } },
+			{
+				error: { code: "NOT_FOUND", message: "Photo data missing in storage" },
+			},
 			404,
 		);
 	}
@@ -472,6 +470,13 @@ const getHistoryHandler: Handler<HonoEnv> = async (c) => {
 	});
 };
 
-analysisRoutes.post("/", createAnalysisHandler);
-analysisRoutes.post("", createAnalysisHandler);
+/** Per-user: vision analysis calls OpenRouter, which is billed per request. */
+const createAnalysisRateLimit = rateLimiter({
+	limit: 10,
+	windowSeconds: 3600,
+	keyPrefix: "analyses:create",
+});
+
+analysisRoutes.post("/", createAnalysisRateLimit, createAnalysisHandler);
+analysisRoutes.post("", createAnalysisRateLimit, createAnalysisHandler);
 analysisRoutes.get("/history", getHistoryHandler);

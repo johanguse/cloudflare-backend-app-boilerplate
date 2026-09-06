@@ -12,6 +12,8 @@ BETTER_AUTH_SECRET=
 # Optional: public base URL for R2 (custom domain / CDN). When set, upload responses and GET /uploads/:key/url use direct public URLs.
 # R2_PUBLIC_BASE_URL=
 # OPENROUTER_KEY=
+# Sentry error tracking (src/index.ts). Unset = disabled, no-op.
+# SENTRY_DSN=
 #
 # The following are only needed for running `drizzle-kit` against a remote D1 database.
 # DRIZZLE_D1_REMOTE=true

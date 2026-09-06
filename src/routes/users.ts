@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
-import * as z from "zod";
+import type * as z from "zod";
 
 import { user } from "@/db/schema/auth";
 import { userPushDevices } from "@/db/schema/push-devices";
@@ -9,6 +9,11 @@ import { fileUploads } from "@/db/schema/uploads";
 import { createAuth } from "@/lib/auth";
 import { headersWithSessionBearer } from "@/lib/auth-session-from-request";
 import { createDb } from "@/lib/db";
+import {
+	userChangePasswordBody as changePasswordBody,
+	deviceRegisterBody,
+	patchMeBody,
+} from "@/lib/schemas";
 import {
 	AVATAR_URL_TTL_SEC,
 	deleteFile,
@@ -18,46 +23,6 @@ import {
 import type { HonoEnv } from "@/lib/types";
 import { requireActiveUser } from "@/middlewares/active-user";
 import { requireBearerAuth } from "@/middlewares/auth";
-
-/** Free-text profile field: trimmed, capped, and `""` normalised to `null`. */
-const profileText = (max: number) =>
-	z
-		.string()
-		.max(max)
-		.transform((v) => {
-			const trimmed = v.trim();
-			return trimmed.length > 0 ? trimmed : null;
-		})
-		.nullable()
-		.optional();
-
-const patchMeBody = z
-	.object({
-		name: z.string().min(1).max(120).optional(),
-		avatar: z.string().nullable().optional(),
-		bio: profileText(500),
-		company: profileText(120),
-		jobTitle: profileText(120),
-		phone: profileText(40),
-		website: profileText(200),
-		country: profileText(80),
-		timezone: profileText(64),
-		onboardingCompleted: z.boolean().optional(),
-		onboardingStep: z.number().int().min(0).max(100).optional(),
-	})
-	.refine((b) => Object.values(b).some((v) => v !== undefined), {
-		message: "At least one field is required",
-	});
-
-const changePasswordBody = z.object({
-	currentPassword: z.string().min(1),
-	newPassword: z.string().min(8),
-});
-
-const deviceRegisterBody = z.object({
-	token: z.string().min(1),
-	platform: z.enum(["ios", "android"]),
-});
 
 /**
  * The client-facing user shape.
@@ -98,11 +63,7 @@ async function resolveAvatar(
 }
 
 const MAX_AVATAR_BYTES = 5 * 1024 * 1024;
-const AVATAR_MIME_TYPES = new Set([
-	"image/jpeg",
-	"image/png",
-	"image/webp",
-]);
+const AVATAR_MIME_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
 function safeFileSegment(name: string): string {
 	const base = name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 128);
@@ -306,7 +267,8 @@ userRoutes.post("/me/avatar", async (c) => {
 	}
 
 	const file = entry as Blob & { name?: string };
-	const mimeType = file.type.length > 0 ? file.type : "application/octet-stream";
+	const mimeType =
+		file.type.length > 0 ? file.type : "application/octet-stream";
 	if (!AVATAR_MIME_TYPES.has(mimeType)) {
 		return c.json(
 			{

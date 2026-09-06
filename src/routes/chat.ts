@@ -1,7 +1,8 @@
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
-import * as z from "zod";
 
+import { rateLimiter } from "@/lib/rate-limit";
+import { chatBody } from "@/lib/schemas";
 import type { HonoEnv } from "@/lib/types";
 import { requireActiveUser } from "@/middlewares/active-user";
 import { requireBearerAuth } from "@/middlewares/auth";
@@ -14,26 +15,17 @@ import { requireBearerAuth } from "@/middlewares/auth";
 const DEFAULT_MODEL = "@cf/meta/llama-3.1-8b-instruct";
 
 /** Caps on a single request, to bound both cost and the model's context. */
-const MAX_MESSAGES = 40;
-const MAX_MESSAGE_CHARS = 8_000;
 const MAX_OUTPUT_TOKENS = 1_024;
-
-const chatBody = z.object({
-	messages: z
-		.array(
-			z.object({
-				role: z.enum(["user", "assistant", "system"]),
-				content: z.string().min(1).max(MAX_MESSAGE_CHARS),
-			}),
-		)
-		.min(1)
-		.max(MAX_MESSAGES),
-});
 
 export const chatRoutes = new Hono<HonoEnv>();
 
 chatRoutes.use("*", requireBearerAuth);
 chatRoutes.use("*", requireActiveUser);
+/** Per-user: Workers AI calls have a real cost, so this is tighter than the global API limit. */
+chatRoutes.use(
+	"*",
+	rateLimiter({ limit: 20, windowSeconds: 300, keyPrefix: "chat" }),
+);
 
 /**
  * Streams a chat completion as Server-Sent Events.

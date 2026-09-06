@@ -10,6 +10,18 @@ import {
 import { issueAccessToken } from "@/lib/auth-tokens";
 import { createDb } from "@/lib/db";
 import { MSG } from "@/lib/messages";
+import { rateLimiter } from "@/lib/rate-limit";
+import {
+	appleBody,
+	authChangePasswordBody as changePasswordBody,
+	forgotPasswordBody,
+	googleNativeBody,
+	loginBody,
+	refreshBody,
+	registerBody,
+	resetPasswordBody,
+	verifyEmailBody,
+} from "@/lib/schemas";
 import type { HonoEnv } from "@/lib/types";
 import { requireBearerAuth } from "@/middlewares/auth";
 import { resolveAppError } from "@/middlewares/error";
@@ -22,56 +34,6 @@ function settleBetterAuthPromise<T>(
 		(error: unknown) => ({ ok: false as const, error }),
 	);
 }
-
-const registerBody = z.object({
-	email: z.string().email(),
-	password: z.string().min(1),
-	name: z.string().min(1),
-});
-
-const loginBody = z.object({
-	email: z.string().email(),
-	password: z.string().min(1),
-});
-
-const refreshBody = z.object({
-	refreshToken: z.string().min(1),
-});
-
-const verifyEmailBody = z.object({
-	token: z.string().min(1),
-});
-
-const forgotPasswordBody = z.object({
-	email: z.string().email(),
-});
-
-const resetPasswordBody = z.object({
-	token: z.string().min(1),
-	newPassword: z.string().min(1),
-});
-
-const appleBody = z.object({
-	identityToken: z.string().min(1),
-	authorizationCode: z.string().optional(),
-	fullName: z
-		.object({
-			givenName: z.string().optional(),
-			familyName: z.string().optional(),
-		})
-		.optional(),
-});
-
-const googleNativeBody = z.object({
-	idToken: z.string().min(1),
-	nonce: z.string().optional(),
-	accessToken: z.string().optional(),
-});
-
-const changePasswordBody = z.object({
-	currentPassword: z.string().min(1),
-	newPassword: z.string().min(8, MSG.auth.passwordTooShort),
-});
 
 async function readJson<T>(
 	c: { req: { json: () => Promise<unknown> } },
@@ -92,7 +54,25 @@ async function readJson<T>(
 
 export const authRoutes = new Hono<HonoEnv>();
 
-authRoutes.post("/register", async (c) => {
+/** IP-based (no session yet): guards against credential stuffing / signup spam. */
+const loginRateLimit = rateLimiter({
+	limit: 10,
+	windowSeconds: 60,
+	keyPrefix: "auth:login",
+});
+const registerRateLimit = rateLimiter({
+	limit: 5,
+	windowSeconds: 3600,
+	keyPrefix: "auth:register",
+});
+/** Shared across forgot/reset/resend — all three send email, so they share one budget. */
+const emailActionRateLimit = rateLimiter({
+	limit: 5,
+	windowSeconds: 3600,
+	keyPrefix: "auth:email",
+});
+
+authRoutes.post("/register", registerRateLimit, async (c) => {
 	const body = await readJson(c, registerBody);
 	const db = createDb(c.env.DB);
 	const auth = createAuth(c.env, db);
@@ -123,7 +103,7 @@ authRoutes.post("/register", async (c) => {
 	});
 });
 
-authRoutes.post("/login", async (c) => {
+authRoutes.post("/login", loginRateLimit, async (c) => {
 	const body = await readJson(c, loginBody);
 	const db = createDb(c.env.DB);
 	const auth = createAuth(c.env, db);
@@ -220,7 +200,7 @@ authRoutes.post("/verify-email", async (c) => {
 	});
 });
 
-authRoutes.post("/resend-verification", async (c) => {
+authRoutes.post("/resend-verification", emailActionRateLimit, async (c) => {
 	const body = await readJson(c, forgotPasswordBody);
 	const db = createDb(c.env.DB);
 	const auth = createAuth(c.env, db);
@@ -236,7 +216,7 @@ authRoutes.post("/resend-verification", async (c) => {
 	});
 });
 
-authRoutes.post("/forgot-password", async (c) => {
+authRoutes.post("/forgot-password", emailActionRateLimit, async (c) => {
 	const body = await readJson(c, forgotPasswordBody);
 	const db = createDb(c.env.DB);
 	const auth = createAuth(c.env, db);
@@ -252,7 +232,7 @@ authRoutes.post("/forgot-password", async (c) => {
 	});
 });
 
-authRoutes.post("/reset-password", async (c) => {
+authRoutes.post("/reset-password", emailActionRateLimit, async (c) => {
 	const body = await readJson(c, resetPasswordBody);
 	const db = createDb(c.env.DB);
 	const auth = createAuth(c.env, db);
@@ -370,7 +350,9 @@ authRoutes.post("/change-password", requireBearerAuth, async (c) => {
 	if (!result.ok) {
 		return resolveAppError(result.error, c);
 	}
-	return c.json({ data: { ok: true as const, message: MSG.auth.passwordChanged } });
+	return c.json({
+		data: { ok: true as const, message: MSG.auth.passwordChanged },
+	});
 });
 
 authRoutes.post("/apple", async (c) => {

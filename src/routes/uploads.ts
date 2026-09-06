@@ -1,11 +1,11 @@
 import { and, eq } from "drizzle-orm";
 import type { Handler } from "hono";
 import { Hono } from "hono";
-import * as z from "zod";
 
 import { fileUploads } from "@/db/schema/uploads";
 import { getConfig } from "@/lib/config";
 import { createDb } from "@/lib/db";
+import { jsonUploadBody } from "@/lib/schemas";
 import {
 	deleteFile,
 	getObject,
@@ -19,12 +19,6 @@ import { requireBearerAuth } from "@/middlewares/auth";
 const SIGNED_URL_TTL_SEC = 900;
 const UPLOAD_KV_PREFIX = "upload_raw:";
 const MAX_UPLOAD_BYTES = 12 * 1024 * 1024;
-
-const jsonUploadBody = z.object({
-	fileBase64: z.string().min(1),
-	mimeType: z.string().min(1),
-	filename: z.string().optional(),
-});
 
 function decodeKeySegment(segment: string): string {
 	return decodeURIComponent(segment);

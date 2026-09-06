@@ -65,7 +65,6 @@ export async function uploadFile(
 	});
 }
 
-
 export function publicFileUrl(basePublicUrl: string, key: string): string {
 	const base = basePublicUrl.replace(/\/$/, "");
 	return `${base}/${encodeURI(key)}`;

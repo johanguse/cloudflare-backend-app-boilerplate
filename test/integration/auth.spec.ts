@@ -156,7 +156,10 @@ describe("auth", () => {
 		const change = await fetchWorker("/api/v1/auth/change-password", {
 			method: "POST",
 			headers: { ...jsonHeaders(), Authorization: `Bearer ${token}` },
-			body: JSON.stringify({ currentPassword: "wrongpassword", newPassword: "doesntmatter1" }),
+			body: JSON.stringify({
+				currentPassword: "wrongpassword",
+				newPassword: "doesntmatter1",
+			}),
 		});
 		expect(change.status).not.toBe(200);
 	});
@@ -165,7 +168,10 @@ describe("auth", () => {
 		const res = await fetchWorker("/api/v1/auth/change-password", {
 			method: "POST",
 			headers: jsonHeaders(),
-			body: JSON.stringify({ currentPassword: "x", newPassword: "newpassword1" }),
+			body: JSON.stringify({
+				currentPassword: "x",
+				newPassword: "newpassword1",
+			}),
 		});
 		expect(res.status).toBe(401);
 	});

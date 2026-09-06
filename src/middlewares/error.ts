@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/cloudflare";
 import { APIError } from "better-auth";
 import type { Context, ErrorHandler } from "hono";
 import { HTTPException } from "hono/http-exception";
@@ -18,7 +19,12 @@ export function resolveAppError(err: unknown, c: Context<HonoEnv>): Response {
 		return err.res
 			? err.getResponse()
 			: c.json(
-					{ error: { code: "HTTP_ERROR", message: err.message || MSG.generic.badRequest } },
+					{
+						error: {
+							code: "HTTP_ERROR",
+							message: err.message || MSG.generic.badRequest,
+						},
+					},
 					err.status as ContentfulStatusCode,
 				);
 	}
@@ -46,9 +52,17 @@ export function resolveAppError(err: unknown, c: Context<HonoEnv>): Response {
 		);
 	}
 
+	// Only truly unexpected errors reach here — expected ones (validation, auth,
+	// HTTPException) are handled above and shouldn't spam error tracking.
+	Sentry.captureException(err);
 	console.error(err);
 	return c.json(
-		{ error: { code: "INTERNAL_SERVER_ERROR", message: MSG.generic.internalError } },
+		{
+			error: {
+				code: "INTERNAL_SERVER_ERROR",
+				message: MSG.generic.internalError,
+			},
+		},
 		500,
 	);
 }

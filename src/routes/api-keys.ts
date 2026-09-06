@@ -1,18 +1,15 @@
 import { and, desc, eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
-import * as z from "zod";
+import type * as z from "zod";
 
 import { apiKeys } from "@/db/schema/api-keys";
 import { hashApiKeySecret } from "@/lib/api-key-hash";
 import { createDb } from "@/lib/db";
+import { createKeyBody } from "@/lib/schemas";
 import type { HonoEnv } from "@/lib/types";
 import { requireActiveUser } from "@/middlewares/active-user";
 import { requireBearerAuth } from "@/middlewares/auth";
-
-const createKeyBody = z.object({
-	name: z.string().min(1).max(128),
-});
 
 function generateApiKeySecret(env: Env): string {
 	const bytes = crypto.getRandomValues(new Uint8Array(32));
